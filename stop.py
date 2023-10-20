@@ -6,8 +6,8 @@ def lambda_handler(event, context):
    
     filters = [
         {
-            'Name': 'tag:Name',
-            'Values': ['Test_Instances']
+            'Name': 'tag:Environment',
+            'Values': ['Dev']
         },
         {
             'Name': 'instance-state-name',
