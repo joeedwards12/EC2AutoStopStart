@@ -64,44 +64,57 @@ resource "aws_lambda_function" "stop_instances" {
   timeout          = 20
 }
 
-resource "aws_cloudwatch_event_rule" "start_instances_rule" {
+resource "aws_eventbridge_rule" "start_instances_rule" {
   name        = "start_instances_rule"
   description = "Schedule to start instances at 8 am on weekdays"
 
+  event_pattern = jsonencode({
+    source = ["aws.ec2"],
+    detail = {
+      eventName : ["RunInstances"],
+    },
+  })
   schedule_expression = "cron(0 7 ? * MON-FRI *)"
 }
 
 resource "aws_cloudwatch_event_target" "start_instances_target" {
-  rule      = aws_cloudwatch_event_rule.start_instances_rule.name
+  rule      = aws_eventbridge_rule.start_instances_rule.name
   target_id = "start_instances_target"
   arn       = aws_lambda_function.start_instances.arn
 }
 
-resource "aws_lambda_permission" "allow_cloudwatch_start" {
-  statement_id  = "AllowExecutionFromCloudWatch"
+resource "aws_lambda_permission" "allow_eventbridge_start" {
+  statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.start_instances.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.start_instances_rule.arn
+  source_arn    = aws_eventbridge_rule.start_instances_rule.arn
 }
 
-resource "aws_cloudwatch_event_rule" "stop_instances_rule" {
+resource "aws_eventbridge_rule" "stop_instances_rule" {
   name        = "stop_instances_rule"
   description = "Schedule to stop instances at 7 pm on weekdays"
+
+  event_pattern = jsonencode({
+    source = ["aws.ec2"],
+    detail = {
+      eventName : ["StopInstances"],
+    },
+  })
 
   schedule_expression = "cron(0 18 ? * MON-FRI *)"
 }
 
-resource "aws_cloudwatch_event_target" "stop_instances_target" {
-  rule      = aws_cloudwatch_event_rule.stop_instances_rule.name
+resource "aws_eventbridge_target" "stop_instances_target" {
+  rule      = aws_eventbridge_rule.stop_instances_rule.name
   target_id = "stop_instances_target"
   arn       = aws_lambda_function.stop_instances.arn
 }
 
-resource "aws_lambda_permission" "allow_cloudwatch_stop" {
+resource "aws_lambda_permission" "allow_eventbridge_stop" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.stop_instances.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.stop_instances_rule.arn
+  source_arn    = aws_eventbridge_rule.stop_instances_rule.arn
 }
