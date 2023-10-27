@@ -1,4 +1,5 @@
-# Project_2
+# Automation of Stopping/Starting EC2 Instances on a Schedule
+
 https://www.joe-edwards.co.uk/#portfolio/portfolio-2
 
 Breif - To implement an automated solution for starting and stopping EC2 instances on a defined schedule. The automation will help optimize costs and resource utilization by ensuring that instances are active only when needed. 
